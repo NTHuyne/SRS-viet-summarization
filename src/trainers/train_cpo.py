@@ -51,6 +51,7 @@ class ScriptArguments:
     
     # Dataset arguments
     dataset_name: str = field(
+        default="",
         metadata={"help": "Preference dataset name"}
     )
     dataset_config: Optional[str] = field(
@@ -82,7 +83,6 @@ class ScriptArguments:
     beta: float = field(default=0.1, metadata={"help": "CPO beta parameter"})
     loss_type: str = field(default="sigmoid", metadata={"help": "CPO loss type"})
     max_length: int = field(default=1024, metadata={"help": "Max length"})
-    max_prompt_length: int = field(default=512, metadata={"help": "Max prompt length"})
     report_to: str = field(default="none", metadata={"help": "Reporting"})
 
 
@@ -105,7 +105,7 @@ def main():
     model = load_model(
         model_name_or_path=script_args.model_name_or_path,
         use_flash_attention_2=script_args.use_flash_attention_2,
-        torch_dtype=script_args.torch_dtype,
+        dtype=script_args.torch_dtype,
         trust_remote_code=script_args.trust_remote_code,
     )
     
@@ -154,8 +154,8 @@ def main():
         beta=script_args.beta,
         loss_type=script_args.loss_type,
         max_length=script_args.max_length,
-        max_prompt_length=script_args.max_prompt_length,
         report_to=script_args.report_to,
+        save_total_limit=6
     )
     
     # Initialize trainer

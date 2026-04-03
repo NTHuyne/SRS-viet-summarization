@@ -9,7 +9,7 @@ from peft import prepare_model_for_kbit_training
 def load_model(
     model_name_or_path: str,
     use_flash_attention_2: bool = True,
-    torch_dtype: str = "auto",
+    dtype: str = "auto",
     device_map: str = "auto",
     trust_remote_code: bool = False,
     use_4bit: bool = False,
@@ -47,25 +47,25 @@ def load_model(
         )
     
     # Convert torch_dtype string to torch dtype
-    if torch_dtype == "auto":
-        dtype = torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16
-    elif torch_dtype == "bfloat16":
-        dtype = torch.bfloat16
-    elif torch_dtype == "float16":
-        dtype = torch.float16
-    elif torch_dtype == "float32":
-        dtype = torch.float32
+    if dtype == "auto":
+        torch_dtype = torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16
+    elif dtype == "bfloat16":
+        torch_dtype = torch.bfloat16
+    elif dtype == "float16":
+        torch_dtype = torch.float16
+    elif dtype == "float32":
+        torch_dtype = torch.float32
     else:
-        dtype = torch_dtype
+        torch_dtype = dtype
     
     # Load model
     model = AutoModelForCausalLM.from_pretrained(
         model_name_or_path,
         quantization_config=quantization_config,
-        torch_dtype=dtype,
+        dtype=torch_dtype,
         device_map=device_map,
         trust_remote_code=trust_remote_code,
-        attn_implementation="flash_attention_2" if use_flash_attention_2 else None,
+        attn_implementation="sdpa",
         **kwargs
     )
     
@@ -78,11 +78,10 @@ def load_model(
 
 def load_tokenizer(
     model_name_or_path: str,
-    padding_side: str = "right",
+    padding_side: str = "left",
     trust_remote_code: bool = False,
-    add_eos_token: bool = False,
-    add_bos_token: bool = False,
-    use_fast: bool = True,
+    add_eos_token: bool = True,
+    add_bos_token: bool = True,
     **kwargs
 ):
     """
@@ -104,7 +103,6 @@ def load_tokenizer(
         model_name_or_path,
         padding_side=padding_side,
         trust_remote_code=trust_remote_code,
-        use_fast=use_fast,
         **kwargs
     )
     

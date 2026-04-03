@@ -2,14 +2,15 @@
 LoRA configuration for efficient fine-tuning
 """
 from peft import LoraConfig
+from typing import Literal
 
 
 def get_lora_config(
     r: int = 16,
     lora_alpha: int = 32,
     lora_dropout: float = 0.05,
-    target_modules: list = None,
-    bias: str = "none",
+    target_modules: list = [],
+    bias: Literal["none", "all", "lora_only"] = "none",
     task_type: str = "CAUSAL_LM",
 ):
     """
@@ -26,7 +27,7 @@ def get_lora_config(
     Returns:
         LoraConfig object
     """
-    if target_modules is None:
+    if target_modules is []:
         # Default for Llama/Qwen/Mistral/Gemma architectures
         target_modules = [
             "q_proj",

@@ -4,19 +4,18 @@
 # Sử dụng: bash scripts/train_dpo.sh
 
 # Set default values
-MODEL_NAME=${MODEL_NAME:-"./outputs/sft"}  # Usually the SFT model
-DATASET_NAME=${DATASET_NAME:-"HuggingFaceH4/ultrafeedback_binarized"}
-DATASET_SPLIT=${DATASET_SPLIT:-"train_prefs"}
-OUTPUT_DIR=${OUTPUT_DIR:-"./outputs/dpo"}
-NUM_EPOCHS=${NUM_EPOCHS:-3}
-BATCH_SIZE=${BATCH_SIZE:-4}
+MODEL_NAME=${MODEL_NAME:-""}  # Usually the SFT model
+DATASET_NAME=${DATASET_NAME:-""}
+DATASET_SPLIT=${DATASET_SPLIT:-"train"}
+OUTPUT_DIR=${OUTPUT_DIR:-""}
+NUM_EPOCHS=${NUM_EPOCHS:-1}
+BATCH_SIZE=${BATCH_SIZE:-2}
 GRAD_ACCUM=${GRAD_ACCUM:-4}
 LEARNING_RATE=${LEARNING_RATE:-5e-7}
 BETA=${BETA:-0.1}
 LOSS_TYPE=${LOSS_TYPE:-"sigmoid"}
-MAX_LENGTH=${MAX_LENGTH:-1024}
-MAX_PROMPT_LENGTH=${MAX_PROMPT_LENGTH:-512}
-USE_LORA=${USE_LORA:-true}
+MAX_LENGTH=${MAX_LENGTH:-2048}
+USE_LORA=${USE_LORA:-false}
 LORA_R=${LORA_R:-16}
 LORA_ALPHA=${LORA_ALPHA:-32}
 
@@ -33,7 +32,6 @@ echo "Learning Rate: $LEARNING_RATE"
 echo "Beta: $BETA"
 echo "Loss Type: $LOSS_TYPE"
 echo "Max Length: $MAX_LENGTH"
-echo "Max Prompt Length: $MAX_PROMPT_LENGTH"
 echo "Use LoRA: $USE_LORA"
 echo "LoRA Rank: $LORA_R"
 echo "LoRA Alpha: $LORA_ALPHA"
@@ -51,8 +49,7 @@ CMD="python src/trainers/train_dpo.py \
     --learning_rate $LEARNING_RATE \
     --beta $BETA \
     --loss_type $LOSS_TYPE \
-    --max_length $MAX_LENGTH \
-    --max_prompt_length $MAX_PROMPT_LENGTH"
+    --max_length $MAX_LENGTH "
 
 # Add LoRA if enabled
 if [ "$USE_LORA" = true ]; then

@@ -8,7 +8,7 @@ from typing import Optional
 
 import torch
 from transformers import HfArgumentParser
-from trl import DPOTrainer
+from trl.trainer.dpo_trainer import DPOTrainer
 
 # Add parent directory to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -51,14 +51,15 @@ class ScriptArguments:
     
     # Dataset arguments
     dataset_name: str = field(
+        default="",
         metadata={"help": "Preference dataset name"}
     )
     dataset_config: Optional[str] = field(
         default=None,
         metadata={"help": "Dataset config"}
     )
-    dataset_split: str = field(
-        default="train",
+    dataset_split: Optional[str] = field(
+        default="",
         metadata={"help": "Dataset split"}
     )
     eval_dataset_name: Optional[str] = field(
@@ -105,7 +106,7 @@ def main():
     model = load_model(
         model_name_or_path=script_args.model_name_or_path,
         use_flash_attention_2=script_args.use_flash_attention_2,
-        torch_dtype=script_args.torch_dtype,
+        dtype=script_args.torch_dtype,
         trust_remote_code=script_args.trust_remote_code,
     )
     
@@ -114,7 +115,7 @@ def main():
     ref_model = load_model(
         model_name_or_path=script_args.model_name_or_path,
         use_flash_attention_2=script_args.use_flash_attention_2,
-        torch_dtype=script_args.torch_dtype,
+        dtype=script_args.torch_dtype,
         trust_remote_code=script_args.trust_remote_code,
     )
     
@@ -160,10 +161,10 @@ def main():
         per_device_train_batch_size=script_args.per_device_train_batch_size,
         gradient_accumulation_steps=script_args.gradient_accumulation_steps,
         learning_rate=script_args.learning_rate,
+        save_total_limit=3,
         beta=script_args.beta,
         loss_type=script_args.loss_type,
         max_length=script_args.max_length,
-        max_prompt_length=script_args.max_prompt_length,
         report_to=script_args.report_to,
     )
     

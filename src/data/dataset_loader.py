@@ -4,6 +4,8 @@ Dataset loading and preprocessing utilities
 from datasets import load_dataset, Dataset, DatasetDict
 from typing import Optional, Union
 
+from transformers import data
+
 
 def load_sft_dataset(
     dataset_name: str,
@@ -42,7 +44,7 @@ def load_sft_dataset(
             streaming=streaming,
             num_proc=num_proc
         )
-    
+
     return dataset
 
 
@@ -85,6 +87,13 @@ def load_preference_dataset(
             streaming=streaming,
             num_proc=num_proc
         )
+
+    if not streaming:
+        dataset = dataset.map(
+            format_to_dpo_chat, 
+        )
+
+    dataset = dataset.shuffle(seed=42)
     
     return dataset
 
@@ -98,22 +107,7 @@ def load_kto_dataset(
     convert_from_preference: bool = False,
 ):
     """
-    Load dataset for KTO training
-    
-    Expected format:
-    - Unpaired: {"prompt": str, "completion": str, "label": bool}
-    - Can auto-convert from paired preference format
-    
-    Args:
-        dataset_name: Dataset name or path
-        dataset_config: Dataset configuration name
-        split: Dataset split to load
-        num_proc: Number of processes for preprocessing
-        streaming: Use streaming mode
-        convert_from_preference: Convert from preference format
-    
-    Returns:
-        Loaded dataset
+    Load dataset cho KTO training và chuyển sang format hội thoại
     """
     if dataset_config:
         dataset = load_dataset(
@@ -131,12 +125,13 @@ def load_kto_dataset(
             num_proc=num_proc
         )
     
-    # Convert from preference format if needed
     if convert_from_preference and not streaming:
         dataset = convert_preference_to_kto(dataset)
     
+    if not streaming:
+        dataset = dataset.map(format_to_kto_chat)
+    
     return dataset
-
 
 def convert_preference_to_kto(dataset: Union[Dataset, DatasetDict]):
     """
@@ -220,33 +215,37 @@ def prepare_conversational_dataset(
     return dataset
 
 
-def filter_dataset_by_length(
-    dataset: Dataset,
-    tokenizer,
-    max_length: int = 2048,
-    text_field: str = "text",
-    num_proc: Optional[int] = None,
-):
+def format_to_dpo_chat(example):
     """
-    Filter dataset by sequence length
-    
-    Args:
-        dataset: Dataset to filter
-        tokenizer: Tokenizer for length calculation
-        max_length: Maximum sequence length
-        text_field: Field name containing text
-        num_proc: Number of processes
-    
-    Returns:
-        Filtered dataset
+    Chuyển đổi string prompt/chosen/rejected sang định dạng list of dict
     """
-    def filter_fn(example):
-        if text_field not in example:
-            return True
-        text = example[text_field]
-        length = len(tokenizer.encode(text))
-        return length <= max_length
+    # Đảm bảo dữ liệu là string và xóa khoảng trắng thừa
+    prompt_str = str(example["prompt"]).strip()
+    chosen_str = str(example["chosen"]).strip()
+    rejected_str = str(example["rejected"]).strip()
+
+    # Tạo format prompt (User)
+    # Lưu ý: Nếu prompt của bạn đã là list rồi thì có thể bỏ qua bước bọc [ ]
+    formatted_prompt = [{"role": "user", "content": prompt_str}]
     
-    filtered = dataset.filter(filter_fn, num_proc=num_proc)
-    print(f"Filtered dataset from {len(dataset)} to {len(filtered)} examples")
-    return filtered
+    # Tạo format chosen/rejected (Assistant)
+    formatted_chosen = [{"role": "assistant", "content": chosen_str}]
+    formatted_rejected = [{"role": "assistant", "content": rejected_str}]
+    
+    return {
+        "prompt": formatted_prompt,
+        "chosen": formatted_chosen,
+        "rejected": formatted_rejected
+    }
+
+
+def format_to_kto_chat(example):
+
+    prompt_str = str(example["prompt"]).strip()
+    completion_str = str(example["completion"]).strip()
+
+    return {
+        "prompt": [{"role": "user", "content": prompt_str}],
+        "completion": [{"role": "assistant", "content": completion_str}],
+        "label": example["label"]
+    }

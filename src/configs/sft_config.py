@@ -1,7 +1,7 @@
 """
 SFT (Supervised Fine-Tuning) configuration
 """
-from trl import SFTConfig
+from trl.trainer.sft_config import SFTConfig
 
 
 def get_sft_config(
@@ -15,20 +15,17 @@ def get_sft_config(
     logging_steps: int = 10,
     save_steps: int = 500,
     eval_steps: int = 500,
-    warmup_ratio: float = 0.1,
+    warmup_steps: float = 0.1,
     lr_scheduler_type: str = "cosine",
     optim: str = "adamw_torch_fused",
     bf16: bool = True,
     fp16: bool = False,
     gradient_checkpointing: bool = True,
-    gradient_checkpointing_kwargs: dict = None,
+    gradient_checkpointing_kwargs: dict = {},
     packing: bool = False,
     dataset_text_field: str = "text",
     max_steps: int = -1,
     save_total_limit: int = 3,
-    load_best_model_at_end: bool = True,
-    metric_for_best_model: str = "loss",
-    greater_is_better: bool = False,
     report_to: str = "none",
     **kwargs
 ):
@@ -46,7 +43,7 @@ def get_sft_config(
         logging_steps: Log every N steps
         save_steps: Save checkpoint every N steps
         eval_steps: Evaluate every N steps
-        warmup_ratio: Warmup ratio for learning rate scheduler
+        warmup_steps: Warmup ratio for learning rate scheduler
         lr_scheduler_type: Type of learning rate scheduler
         optim: Optimizer type
         bf16: Use bfloat16 precision
@@ -57,9 +54,6 @@ def get_sft_config(
         dataset_text_field: Field name containing text in dataset
         max_steps: Maximum number of training steps (overrides num_train_epochs)
         save_total_limit: Maximum number of checkpoints to keep
-        load_best_model_at_end: Load best model at end of training
-        metric_for_best_model: Metric to use for best model selection
-        greater_is_better: Whether higher metric is better
         report_to: Where to report metrics (wandb, tensorboard, none)
         **kwargs: Additional arguments for SFTConfig
     
@@ -76,11 +70,10 @@ def get_sft_config(
         per_device_eval_batch_size=per_device_eval_batch_size,
         gradient_accumulation_steps=gradient_accumulation_steps,
         learning_rate=learning_rate,
-        max_seq_length=max_seq_length,
         logging_steps=logging_steps,
         save_steps=save_steps,
         eval_steps=eval_steps,
-        warmup_ratio=warmup_ratio,
+        warmup_steps=warmup_steps,
         lr_scheduler_type=lr_scheduler_type,
         optim=optim,
         bf16=bf16,
@@ -91,9 +84,6 @@ def get_sft_config(
         dataset_text_field=dataset_text_field,
         max_steps=max_steps,
         save_total_limit=save_total_limit,
-        load_best_model_at_end=load_best_model_at_end,
-        metric_for_best_model=metric_for_best_model,
-        greater_is_better=greater_is_better,
         report_to=report_to,
         **kwargs
     )
