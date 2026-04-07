@@ -11,11 +11,10 @@ def get_sft_config(
     per_device_eval_batch_size: int = 4,
     gradient_accumulation_steps: int = 4,
     learning_rate: float = 2e-5,
-    max_seq_length: int = 2048,
     logging_steps: int = 10,
     save_steps: int = 500,
     eval_steps: int = 500,
-    warmup_steps: float = 0.1,
+    warmup_steps: int = 500,
     lr_scheduler_type: str = "cosine",
     optim: str = "adamw_torch_fused",
     bf16: bool = True,
@@ -39,11 +38,10 @@ def get_sft_config(
         per_device_eval_batch_size: Batch size per device for evaluation
         gradient_accumulation_steps: Number of gradient accumulation steps
         learning_rate: Learning rate
-        max_seq_length: Maximum sequence length
         logging_steps: Log every N steps
         save_steps: Save checkpoint every N steps
         eval_steps: Evaluate every N steps
-        warmup_steps: Warmup ratio for learning rate scheduler
+        warmup_steps: Warmup steps for learning rate scheduler
         lr_scheduler_type: Type of learning rate scheduler
         optim: Optimizer type
         bf16: Use bfloat16 precision
@@ -60,7 +58,7 @@ def get_sft_config(
     Returns:
         SFTConfig object
     """
-    if gradient_checkpointing_kwargs is None:
+    if gradient_checkpointing_kwargs is {}:
         gradient_checkpointing_kwargs = {"use_reentrant": False}
     
     config = SFTConfig(

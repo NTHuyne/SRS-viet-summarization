@@ -32,7 +32,7 @@ class ScriptArguments:
         metadata={"help": "Trust remote code when loading model/tokenizer"}
     )
     use_flash_attention_2: bool = field(
-        default=True,
+        default=False,
         metadata={"help": "Use Flash Attention 2"}
     )
     torch_dtype: str = field(
@@ -60,6 +60,7 @@ class ScriptArguments:
     
     # Dataset arguments
     dataset_name: str = field(
+        default="",
         metadata={"help": "Dataset name or path"}
     )
     dataset_config: Optional[str] = field(
@@ -136,7 +137,7 @@ def main():
     model = load_model(
         model_name_or_path=script_args.model_name_or_path,
         use_flash_attention_2=script_args.use_flash_attention_2,
-        torch_dtype=script_args.torch_dtype,
+        dtype=script_args.torch_dtype,
         trust_remote_code=script_args.trust_remote_code,
     )
     
@@ -185,7 +186,6 @@ def main():
         per_device_train_batch_size=script_args.per_device_train_batch_size,
         gradient_accumulation_steps=script_args.gradient_accumulation_steps,
         learning_rate=script_args.learning_rate,
-        max_seq_length=script_args.max_seq_length,
         packing=script_args.packing,
         dataset_text_field=script_args.dataset_text_field,
         report_to=script_args.report_to,
